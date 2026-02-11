@@ -1,0 +1,25 @@
+services:
+  # Backend Flask Service
+  - type: web
+    name: industry-portal-backend
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn --chdir backend app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0 # Adjust as needed
+      # Add database URL here if using PostgreSQL
+
+  # Frontend Static Site
+  - type: static
+    name: industry-portal-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    publishDir: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: industry-portal-backend
+          property: url
+        suffix: /api # Automatically points to the backend URL + /api
