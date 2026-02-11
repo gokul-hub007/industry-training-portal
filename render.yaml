@@ -7,19 +7,18 @@ services:
     startCommand: gunicorn --chdir backend app:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.0 # Adjust as needed
-      # Add database URL here if using PostgreSQL
+        value: 3.9.0
 
-  # Frontend Static Site
-  - type: static_site
+  # Frontend (Vite React)
+  - type: web
     name: industry-portal-frontend
-    env: static
+    env: node
     buildCommand: npm install && npm run build
-    publishDir: dist
+    startCommand: npx serve -s dist
     envVars:
       - key: VITE_API_BASE_URL
         fromService:
           type: web
           name: industry-portal-backend
           property: url
-        suffix: /api # Automatically points to the backend URL + /api
+        suffix: /api
