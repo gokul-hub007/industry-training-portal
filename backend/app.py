@@ -11,24 +11,30 @@ app = Flask(__name__)
 CORS(app)
 
 # Database Configuration
-# Database Configuration
-basedir = os.path.abspath(os.path.dirname(__file__))
-db_path = os.path.join(basedir, 'portal.db')
-
-if os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME') or os.environ.get('RENDER'):
-    # In Vercel/Lambda, we can only write to /tmp
-    # NOTE: Data is ephemeral and will be lost on container restart
-    import shutil
-    tmp_db_path = '/tmp/portal.db'
-    if not os.path.exists(tmp_db_path):
-        if os.path.exists(db_path):
-             try:
-                shutil.copy2(db_path, tmp_db_path)
-             except:
-                pass
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + tmp_db_path
+if os.environ.get('DATABASE_URL'):
+    # PostgreSQL URL found in environment (Render/Production)
+    db_url = os.environ.get('DATABASE_URL')
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
+    # Fallback to Local SQLite
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    db_path = os.path.join(basedir, 'portal.db')
+    
+    if os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME') or os.environ.get('RENDER'):
+        # In Vercel/Lambda/Static containers without Postgres, we can only write to /tmp
+        import shutil
+        tmp_db_path = '/tmp/portal.db'
+        if not os.path.exists(tmp_db_path):
+            if os.path.exists(db_path):
+                 try:
+                    shutil.copy2(db_path, tmp_db_path)
+                 except:
+                    pass
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + tmp_db_path
+    else:
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
