@@ -125,6 +125,17 @@ export const fetchStudentsRegistry = async () => {
     }
 };
 
+export const fetchContactMessages = async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/contact-messages`);
+        if (!response.ok) throw new Error('Failed to fetch contact messages');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        return [];
+    }
+};
+
 export const enrollCourse = async (enrollmentData) => {
     try {
         console.log('Enrolling with data:', enrollmentData);

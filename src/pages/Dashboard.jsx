@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CourseCard from '../components/CourseCard';
-import { fetchFacultyAnalytics, fetchStudentsRegistry, fetchFaculty, updateStudent, deleteStudent, updateFaculty, deleteFaculty } from '../api/apiClient';
+import { fetchFacultyAnalytics, fetchStudentsRegistry, fetchFaculty, updateStudent, deleteStudent, updateFaculty, deleteFaculty, fetchContactMessages } from '../api/apiClient';
 import { TrendingUp, Users, Award, Star, Loader2, Edit2, Trash2, Save, X } from 'lucide-react';
 
 const enrolledCourses = [
@@ -22,6 +22,7 @@ const Dashboard = () => {
     const [analytics, setAnalytics] = useState(null);
     const [students, setStudents] = useState([]);
     const [faculty, setFaculty] = useState([]);
+    const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({});
@@ -61,12 +62,14 @@ const Dashboard = () => {
     const loadAdminData = async () => {
         setLoading(true);
         try {
-            const [studentsData, facultyData] = await Promise.all([
+            const [studentsData, facultyData, messagesData] = await Promise.all([
                 fetchStudentsRegistry(),
-                fetchFaculty()
+                fetchFaculty(),
+                fetchContactMessages()
             ]);
             setStudents(studentsData);
             setFaculty(facultyData);
+            setMessages(messagesData);
         } catch (error) {
             console.error('Failed to load admin data:', error);
         } finally {
@@ -358,6 +361,43 @@ const Dashboard = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Contact Messages Management */}
+                    <div className="glass-panel" style={{ padding: '2rem' }}>
+                        <h2 style={{ marginBottom: '1.5rem', fontSize: '1.5rem' }}>Contact Messages</h2>
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: '1px solid var(--border-subtle)', textAlign: 'left' }}>
+                                        <th style={{ padding: '1rem' }}>Name</th>
+                                        <th style={{ padding: '1rem' }}>Email</th>
+                                        <th style={{ padding: '1rem' }}>Message</th>
+                                        <th style={{ padding: '1rem' }}>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {messages.length > 0 ? (
+                                        messages.map(m => (
+                                            <tr key={m.id} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                                                <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{m.name}</td>
+                                                <td style={{ padding: '1rem' }}>{m.email}</td>
+                                                <td style={{ padding: '1rem', minWidth: '300px' }}>{m.message}</td>
+                                                <td style={{ padding: '1rem', whiteSpace: 'nowrap', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                                    {m.timestamp}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="4" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                                                No messages found.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             ) : (
