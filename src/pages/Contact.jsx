@@ -35,7 +35,13 @@ const Contact = () => {
                 body: JSON.stringify(formData)
             });
 
-            const data = await response.json();
+            let data;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                data = await response.json();
+            } else {
+                data = { message: `Server returned an invalid response (${response.status}).` };
+            }
 
             if (response.ok) {
                 setSuccess(true);
@@ -46,7 +52,12 @@ const Contact = () => {
                 setError(data.message || 'Failed to send message. Please try again.');
             }
         } catch (err) {
-            setError('Failed to send message. Please check your connection and try again.');
+            const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+            if (BASE_URL.includes('localhost') && window.location.hostname !== 'localhost') {
+                setError('Failed to send message. Your frontend is trying to connect to localhost:5000 instead of your deployed backend URL. Please set VITE_API_BASE_URL in your Render environment variables.');
+            } else {
+                setError('Failed to send message. Please check your connection and try again.');
+            }
         } finally {
             setLoading(false);
         }
