@@ -36,17 +36,24 @@ else:
     else:
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
 
+    # SQLite-specific configuration to prevent database locking
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'connect_args': {
+            'timeout': 20,  # Increase timeout to 20 seconds
+            'check_same_thread': False  # Allow multi-threaded access
+        },
+        'pool_pre_ping': True,  # Verify connections before using them
+        'pool_recycle': 3600,  # Recycle connections after 1 hour
+    }
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# SQLite-specific configuration to prevent database locking
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'connect_args': {
-        'timeout': 20,  # Increase timeout to 20 seconds
-        'check_same_thread': False  # Allow multi-threaded access
-    },
-    'pool_pre_ping': True,  # Verify connections before using them
-    'pool_recycle': 3600,  # Recycle connections after 1 hour
-}
+if os.environ.get('DATABASE_URL'):
+    # For Postgres, just set basic pool options without SQLite connect_args
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 3600,
+    }
 
 db = SQLAlchemy(app)
 
