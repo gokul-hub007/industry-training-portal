@@ -11,9 +11,9 @@ app = Flask(__name__)
 CORS(app)
 
 # Database Configuration
-if os.environ.get('DATABASE_URL'):
-    # PostgreSQL URL found in environment (Render/Production)
-    db_url = os.environ.get('DATABASE_URL')
+db_url = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')
+if db_url:
+    # PostgreSQL URL found in environment (Render/Production/Vercel)
     if db_url.startswith("postgres://"):
         db_url = db_url.replace("postgres://", "postgresql://", 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
