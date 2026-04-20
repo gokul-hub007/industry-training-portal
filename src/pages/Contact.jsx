@@ -26,7 +26,7 @@ const Contact = () => {
         setSuccess(false);
 
         try {
-            const BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
+            const BASE_URL = import.meta.env.VITE_API_BASE_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api');
             const response = await fetch(`${BASE_URL}/contact`, {
                 method: 'POST',
                 headers: {
@@ -52,7 +52,7 @@ const Contact = () => {
                 setError(data.message || 'Failed to send message. Please try again.');
             }
         } catch (err) {
-            const BASE_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
+            const BASE_URL = import.meta.env.VITE_API_BASE_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api');
             if (BASE_URL.includes('localhost') && window.location.hostname !== 'localhost') {
                 setError('Failed to send message. Your frontend is trying to connect to localhost:5000 instead of your deployed backend URL. Please set VITE_API_BASE_URL in your Render environment variables.');
             } else {
